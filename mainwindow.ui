@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_5">
+   <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,10">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
@@ -27,22 +27,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="sbMirror1_RPM">
+         <widget class="QSpinBox" name="sbMirror1_ratio">
           <property name="maximum">
            <number>1000000000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>RPM</string>
           </property>
          </widget>
         </item>
@@ -58,22 +45,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="sbMirror2_RPM">
+         <widget class="QSpinBox" name="sbMirror2_ratio">
           <property name="maximum">
            <number>1000000000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>RPM</string>
           </property>
          </widget>
         </item>
@@ -89,22 +63,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="sbMirror3_RPM">
+         <widget class="QSpinBox" name="sbMirror3_ratio">
           <property name="maximum">
            <number>1000000000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>RPM</string>
           </property>
          </widget>
         </item>
@@ -112,6 +73,13 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QCheckBox" name="cbAnimate">
+          <property name="text">
+           <string>Animate</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
@@ -134,6 +102,24 @@
         </item>
        </layout>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QPushButton" name="pbIncGran">
+          <property name="text">
+           <string>Increase Granularity</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pbDecGran">
+          <property name="text">
+           <string>Decrease Granularity</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </item>
     <item>
@@ -151,6 +137,7 @@
      </layout>
     </item>
    </layout>
+   <zorder>spwSpirograph</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

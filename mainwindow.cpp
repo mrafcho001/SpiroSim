@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->pbGo, SIGNAL(clicked()), this, SLOT(ProcessSpirograph()));
+    connect(ui->pbIncGran, SIGNAL(clicked()), ui->spwSpirograph, SLOT(IncreaseGranularity()));
+    connect(ui->pbDecGran, SIGNAL(clicked()), ui->spwSpirograph, SLOT(DecreaseGranularity()));
 }
 
 MainWindow::~MainWindow()
@@ -19,14 +21,17 @@ void MainWindow::ProcessSpirograph()
 {
     ui->spwSpirograph->ClearMirrors();
 
-    if(ui->cbMirror1->isChecked())
-        ui->spwSpirograph->AddMirror(0, ui->sbMirror1_RPM->value());
+    if(ui->cbMirror1->isChecked() && ui->sbMirror1_ratio->value() > 0)
+        ui->spwSpirograph->AddMirror(0, ui->sbMirror1_ratio->value());
 
-    if(ui->cbMirror2->isChecked())
-        ui->spwSpirograph->AddMirror(0, ui->sbMirror2_RPM->value());
+    if(ui->cbMirror2->isChecked() && ui->sbMirror2_ratio->value() > 0)
+        ui->spwSpirograph->AddMirror(0, ui->sbMirror2_ratio->value());
 
-    if(ui->cbMirror3->isChecked())
-        ui->spwSpirograph->AddMirror(0, ui->sbMirror3_RPM->value());
+    if(ui->cbMirror3->isChecked() && ui->sbMirror3_ratio->value() > 0)
+        ui->spwSpirograph->AddMirror(0, ui->sbMirror3_ratio->value());
 
-    ui->spwSpirograph->AnimatePeriod();
+    if(ui->cbAnimate->isChecked())
+        ui->spwSpirograph->AnimatePeriod();
+    else
+        ui->spwSpirograph->NoAnimateUpdate();
 }
