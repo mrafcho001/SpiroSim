@@ -11,14 +11,12 @@ SpiroGraphWidget::SpiroGraphWidget(QWidget *parent) :
     this->setPalette(p);
     setAutoFillBackground(true);
 
-    m_mirrorRatios = new QList<int>();
-    m_mirrorOffset = new QList<double>();
+    m_mirrors = new QList<QMirrorValues*>();
 }
 
 SpiroGraphWidget::~SpiroGraphWidget()
 {
-    delete m_mirrorRatios;
-    delete m_mirrorOffset;
+    delete m_mirrors;
     if(m_timer) delete m_timer;
 }
 
@@ -32,6 +30,11 @@ QSize SpiroGraphWidget::sizeHint() const
     return QSize(400, 400);
 }
 
+double SpiroGraphWidget::GetGranularity() const
+{
+    return m_granularity;
+}
+
 void SpiroGraphWidget::IncreaseGranularity()
 {
     m_granularity /= 2.0;
@@ -40,6 +43,11 @@ void SpiroGraphWidget::IncreaseGranularity()
 void SpiroGraphWidget::DecreaseGranularity()
 {
     m_granularity *= 2.0;
+}
+
+void SpiroGraphWidget::SetGranularity(double granularity)
+{
+    m_granularity = qAbs(granularity);
 }
 
 void SpiroGraphWidget::Advance()
@@ -79,28 +87,33 @@ void SpiroGraphWidget::NoAnimateUpdate()
     update();
 }
 
-void SpiroGraphWidget::AddMirror(int deg_offset, int ratio)
+bool SpiroGraphWidget::AddMirror(QMirrorValues *mirror)
 {
-    m_mirrorOffset->append((deg_offset%360)/180.0*PI);
-    m_mirrorRatios->append(ratio);
+    if(m_mirrors->contains(mirror))
+        return false;
+
+    m_mirrors->append(mirror);
+    return true;
 }
 
 void SpiroGraphWidget::ClearMirrors()
 {
-    m_mirrorOffset->clear();
-    m_mirrorRatios->clear();
+    m_mirrors->clear();
 }
 
-void SpiroGraphWidget::SetMirrorRPM(int index, __int64_t rpm)
+void SpiroGraphWidget::SetMirrorRatio(int index, int ratio)
 {
-    (void)index;
-    (void)rpm;
+    (*m_mirrors)[index]->SetRatio(ratio);
 }
 
-void SpiroGraphWidget::SetMirrorOffset(int index, __int64_t offset)
+void SpiroGraphWidget::SetMirrorOffset(int index, double offset)
 {
-    (void)index;
-    (void)offset;
+    (*m_mirrors)[index]->SetOffset(offset);
+}
+
+bool SpiroGraphWidget::RemoveMirror(QMirrorValues *mirror)
+{
+    return m_mirrors->removeOne(mirror);
 }
 
 void SpiroGraphWidget::timedOut()
@@ -125,7 +138,7 @@ void SpiroGraphWidget::paintEvent(QPaintEvent *event)
     painter.drawLine(0, this->height()/2, this->width(), this->height()/2);
     painter.drawLine(this->width()/2, 0, this->width()/2, this->height());
 
-    if(m_mirrorRatios->size() == 0)
+    if(m_mirrors->size() == 0)
         return;
 
     painter.translate(this->width()/2, this->height()/2);
@@ -134,27 +147,27 @@ void SpiroGraphWidget::paintEvent(QPaintEvent *event)
 
     double x_prev =0.0, y_prev=0.0;
 
-    for(int itr = 0; itr < m_mirrorOffset->size(); itr++)
+    for(QList<QMirrorValues*>::iterator itr = m_mirrors->begin(); itr != m_mirrors->end(); ++itr)
     {
-        x_prev += qCos((*m_mirrorOffset)[itr]);
-        y_prev += qSin((*m_mirrorOffset)[itr]);
+        x_prev += qCos((*itr)->GetOffset());
+        y_prev += qSin((*itr)->GetOffset());
     }
 
-    x_prev /= m_mirrorOffset->size();
-    y_prev /= m_mirrorOffset->size();
+    x_prev /= m_mirrors->size();
+    y_prev /= m_mirrors->size();
 
     for(int i = 1; i < m_currentStep; i++)
     {
         double x = 0, y = 0;
-        for(int itr = 0; itr < m_mirrorRatios->size(); itr++)
+        for(QList<QMirrorValues*>::iterator itr = m_mirrors->begin(); itr != m_mirrors->end(); ++itr)
         {
-            double dTheta = (*m_mirrorOffset)[itr] + i * (m_granularity * (*m_mirrorRatios)[itr])/m_maxRatio;
+            double dTheta = (*itr)->GetOffset() + i * (m_granularity * (*itr)->GetRatio())/m_maxRatio;
             x += qCos(dTheta);
             y += qSin(dTheta);
         }
 
-        x /= m_mirrorRatios->size();
-        y /= m_mirrorRatios->size();
+        x /= m_mirrors->size();
+        y /= m_mirrors->size();
 
         painter.drawLine(QLineF(x_prev, y_prev, x, y));
         x_prev = x;
@@ -166,14 +179,15 @@ void SpiroGraphWidget::calculateTheta()
 {
     int rotations = 1;
 
-    if(m_mirrorRatios->size() > 1)
+    if(m_mirrors->size() > 1)
     {
-        m_maxRatio = rotations = (*m_mirrorRatios)[0];
-        for(int i = 1; i < m_mirrorOffset->size(); i++)
+        m_maxRatio = rotations = (*m_mirrors)[0]->GetRatio();
+        for(QList<QMirrorValues*>::iterator itr = m_mirrors->begin()++; itr != m_mirrors->end(); ++itr)
+        //for(int i = 1; i < m_mirrorOffset->size(); i++)
         {
-            rotations = LCM(rotations, (*m_mirrorRatios)[i]);
-            if((*m_mirrorRatios)[i] > m_maxRatio)
-                m_maxRatio = (*m_mirrorRatios)[i];
+            rotations = LCM(rotations, (*itr)->GetRatio());
+            if(qAbs((*itr)->GetRatio()) > m_maxRatio)
+                m_maxRatio = qAbs((*itr)->GetRatio());
         }
     }
 
@@ -182,9 +196,9 @@ void SpiroGraphWidget::calculateTheta()
 
 int SpiroGraphWidget::GCD(int a, int b)
 {
-    __int64_t v1 = a;
-    __int64_t v2 = b;
-    __int64_t gcd = 1;
+    int v1 = a;
+    int v2 = b;
+    int gcd = 1;
 
     if (v1>v2 && v1 % v2==0)
         return b;
@@ -210,8 +224,8 @@ int SpiroGraphWidget::LCM(int a, int b)
     else if(a == b)
         return a;
 
-    __int64_t v1 = qAbs(a);
-    __int64_t v2 = qAbs(b);
+    int v1 = qAbs(a);
+    int v2 = qAbs(b);
 
     v1 = v1/GCD(v1,v2);
     return v1*v2;

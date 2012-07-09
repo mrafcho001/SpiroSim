@@ -12,9 +12,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    spirographwidget.cpp
+    spirographwidget.cpp \
+    qmirrorvalues.cpp
 
 HEADERS  += mainwindow.h \
-    spirographwidget.h
+    spirographwidget.h \
+    qmirrorvalues.h
 
 FORMS    += mainwindow.ui

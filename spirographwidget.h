@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QTimer>
 #include <QList>
+#include "qmirrorvalues.h"
 
 #define PI  3.14159265
 
@@ -16,24 +17,27 @@ public:
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
 
+    double GetGranularity() const;
 
-    
 signals:
     
 public slots:
 
     void IncreaseGranularity();
     void DecreaseGranularity();
-    void Advance();
+    void SetGranularity(double granularity);
+
     void BeginAnimation();
     void StopAnimation();
+    void Advance();
     void AnimatePeriod();
     void NoAnimateUpdate();
-    // 0 <= deg_offset <= 360, rpm > 0
-    void AddMirror(int deg_offset, int ratio);
+
+    bool AddMirror(QMirrorValues *mirror);
     void ClearMirrors();
-    void SetMirrorRPM(int index, __int64_t rpm);
-    void SetMirrorOffset(int index, __int64_t offset);
+    void SetMirrorRatio(int index, int ratio);
+    void SetMirrorOffset(int index, double offset);
+    bool RemoveMirror(QMirrorValues *mirror);
 
 private slots:
     void timedOut();
@@ -51,9 +55,7 @@ private:
     int m_currentStep;
     int m_maxRatio;
 
-    QList<int> *m_mirrorRatios;
-    QList<double> *m_mirrorOffset;
-
+    QList<QMirrorValues*> *m_mirrors;
     QTimer *m_timer;
 
 };
